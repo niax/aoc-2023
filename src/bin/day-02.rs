@@ -82,43 +82,49 @@ impl FromStr for Game {
 }
 
 fn part1(input: &Vec<Game>) -> u32 {
-    input.iter().map(|game| {
-        let mut red = 0;
-        let mut green = 0;
-        let mut blue = 0;
+    input
+        .iter()
+        .map(|game| {
+            let mut red = 0;
+            let mut green = 0;
+            let mut blue = 0;
 
-        for round in &game.rounds {
-            red = red.max(round.red);
-            green = green.max(round.green);
-            blue = blue.max(round.blue);
-        }
+            for round in &game.rounds {
+                red = red.max(round.red);
+                green = green.max(round.green);
+                blue = blue.max(round.blue);
+            }
 
-        if red <= 12 && green <= 13 && blue <= 14 {
-            game.id
-        } else {
-            0
-        }
-    }).sum()
+            if red <= 12 && green <= 13 && blue <= 14 {
+                game.id
+            } else {
+                0
+            }
+        })
+        .sum()
 }
 
 fn part2(input: &Vec<Game>) -> u32 {
-    input.iter().map(|game| {
-        let mut red = 0;
-        let mut green = 0;
-        let mut blue = 0;
+    input
+        .iter()
+        .map(|game| {
+            let mut red = 0;
+            let mut green = 0;
+            let mut blue = 0;
 
-        for round in &game.rounds {
-            red = red.max(round.red);
-            green = green.max(round.green);
-            blue = blue.max(round.blue);
-        }
+            for round in &game.rounds {
+                red = red.max(round.red);
+                green = green.max(round.green);
+                blue = blue.max(round.blue);
+            }
 
-        red * green * blue
-    }).sum()
+            red * green * blue
+        })
+        .sum()
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let input=  load_argv_lines::<Game>().collect::<Result<Vec<_>, _>>()?;
+    let input = load_argv_lines::<Game>().collect::<Result<Vec<_>, _>>()?;
 
     println!("{}", part1(&input));
     println!("{}", part2(&input));
