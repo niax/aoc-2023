@@ -2,7 +2,7 @@ use aoc_2023::commons::io::load_argv_lines;
 use std::collections::HashMap;
 use std::error::Error;
 
-fn part1(input: &Vec<String>) -> u32 {
+fn part1(input: &[String]) -> u32 {
     let map = HashMap::from([
         ("0", 0),
         ("1", 1),
@@ -19,7 +19,7 @@ fn part1(input: &Vec<String>) -> u32 {
     solution(input, map)
 }
 
-fn part2(input: &Vec<String>) -> u32 {
+fn part2(input: &[String]) -> u32 {
     let map = HashMap::from([
         ("0", 0),
         ("1", 1),
@@ -45,7 +45,7 @@ fn part2(input: &Vec<String>) -> u32 {
     solution(input, map)
 }
 
-fn solution(input: &Vec<String>, map: HashMap<&str, u32>) -> u32 {
+fn solution(input: &[String], map: HashMap<&str, u32>) -> u32 {
     input
         .iter()
         .map(|line| {

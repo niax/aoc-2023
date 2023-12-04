@@ -46,7 +46,7 @@ peg::parser! {
         pub rule game() -> Game
             = "Game " id:number() ": " r:rounds() {
                 Game {
-                    id: id,
+                    id,
                     rounds: r,
                 }
             }
@@ -81,7 +81,7 @@ impl FromStr for Game {
     }
 }
 
-fn part1(input: &Vec<Game>) -> u32 {
+fn part1(input: &[Game]) -> u32 {
     input
         .iter()
         .map(|game| {
@@ -104,7 +104,7 @@ fn part1(input: &Vec<Game>) -> u32 {
         .sum()
 }
 
-fn part2(input: &Vec<Game>) -> u32 {
+fn part2(input: &[Game]) -> u32 {
     input
         .iter()
         .map(|game| {

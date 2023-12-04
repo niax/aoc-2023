@@ -16,8 +16,8 @@ peg::parser! {
         pub rule card() -> Card
             = "Card" (" "+) id:number() ":" (" "+) winning:number_list() " | " (" "*) picked:number_list() {
                 Card {
-                    id: id,
-                    winning: winning,
+                    id,
+                    winning,
                     picked: picked.iter().copied().collect(),
                 }
             }
@@ -48,7 +48,7 @@ impl FromStr for Card {
     }
 }
 
-fn part1(input: &Vec<Card>) -> u32 {
+fn part1(input: &[Card]) -> u32 {
     input
         .iter()
         .map(|card| {
@@ -56,13 +56,13 @@ fn part1(input: &Vec<Card>) -> u32 {
             if matching == 0 {
                 0
             } else {
-                2_u32.pow(matching as u32 - 1)
+                2_u32.pow(matching - 1)
             }
         })
         .sum()
 }
 
-fn part2(input: &Vec<Card>) -> u32 {
+fn part2(input: &[Card]) -> u32 {
     let mut card_counts = HashMap::new();
     for card in input {
         card_counts.insert(card.id, 1);
@@ -78,7 +78,7 @@ fn part2(input: &Vec<Card>) -> u32 {
         }
     }
 
-    card_counts.iter().map(|(_, v)| v).sum()
+    card_counts.values().sum()
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
