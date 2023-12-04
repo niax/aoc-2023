@@ -50,7 +50,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 }
             }
 
-            'outer: for i in (0..line.len()).rev() {
+            'outer: for i in 0..line.len() {
                 let substr = &line[..(line.len() - i)];
                 for (stringy, value, p1) in map {
                     if substr.ends_with(stringy) {
