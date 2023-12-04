@@ -5,24 +5,24 @@ fn main() -> Result<(), Box<dyn Error>> {
     let input = load_argv_lines::<String>().collect::<Result<Vec<_>, _>>()?;
 
     let map = [
-        ("1", "1", 1, true),
-        ("2", "2", 2, true),
-        ("3", "3", 3, true),
-        ("4", "4", 4, true),
-        ("5", "5", 5, true),
-        ("6", "6", 6, true),
-        ("7", "7", 7, true),
-        ("8", "8", 8, true),
-        ("9", "9", 9, true),
-        ("one", "eno", 1, false),
-        ("two", "owt", 2, false),
-        ("three", "eerht", 3, false),
-        ("four", "ruof", 4, false),
-        ("five", "evif", 5, false),
-        ("six", "xis", 6, false),
-        ("seven", "neves", 7, false),
-        ("eight", "thgie", 8, false),
-        ("nine", "enin", 9, false),
+        ("1", 1, true),
+        ("2", 2, true),
+        ("3", 3, true),
+        ("4", 4, true),
+        ("5", 5, true),
+        ("6", 6, true),
+        ("7", 7, true),
+        ("8", 8, true),
+        ("9", 9, true),
+        ("one", 1, false),
+        ("two", 2, false),
+        ("three", 3, false),
+        ("four", 4, false),
+        ("five", 5, false),
+        ("six", 6, false),
+        ("seven", 7, false),
+        ("eight", 8, false),
+        ("nine", 9, false),
     ];
 
     let (p1, p2) = input
@@ -35,7 +35,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
             'outer: for i in 0..line.len() {
                 let substr = &line[i..];
-                for (stringy, _, value, p1) in map {
+                for (stringy, value, p1) in map {
                     if substr.starts_with(stringy) {
                         if p1 {
                             p1_leftmost = Some(value)
@@ -50,10 +50,10 @@ fn main() -> Result<(), Box<dyn Error>> {
                 }
             }
 
-            'outer: for i in 0..line.len() {
-                let revsubstr = line.chars().rev().skip(i).collect::<String>();
-                for (_, stringy, value, p1) in map {
-                    if revsubstr.starts_with(stringy) {
+            'outer: for i in (0..line.len()).rev() {
+                let substr = &line[..(line.len() - i)];
+                for (stringy, value, p1) in map {
+                    if substr.ends_with(stringy) {
                         if p1 {
                             p1_rightmost = Some(value)
                         }
