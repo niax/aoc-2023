@@ -1,7 +1,7 @@
-use std::error::Error;
 use aoc_2023::commons::io::Input;
-use peg::str::LineCol;
 use itertools::Itertools;
+use peg::str::LineCol;
+use std::error::Error;
 use std::str::FromStr;
 
 peg::parser! {
@@ -16,7 +16,7 @@ peg::parser! {
 
         rule mapping() -> Mapping
             = dst_start:number() " " src_start:number() " " length:number() {
-                Mapping { 
+                Mapping {
                     src_range: src_start..(src_start + length),
                     dst_start
                 }
@@ -96,38 +96,43 @@ impl FromStr for Puzzle {
 fn main() -> Result<(), Box<dyn Error>> {
     let input = puzle_parser::puzzle(Input::from_argv()?.as_str())?;
 
-    let part1 = input.seeds.iter().map(|seed| {
-        let soil = apply_mappings(&input.seeds_to_soil, *seed);
-        let fertilizer = apply_mappings(&input.soil_to_fertilizer, soil);
-        let water = apply_mappings(&input.fertilizer_to_water, fertilizer);
-        let light = apply_mappings(&input.water_to_light, water);
-        let temperature = apply_mappings(&input.light_to_temperature, light);
-        let humidity = apply_mappings(&input.temperature_to_humidity, temperature);
-        let location = apply_mappings(&input.humidity_to_location, humidity);
-        location
-    }).min().unwrap();
+    let part1 = input
+        .seeds
+        .iter()
+        .map(|seed| {
+            let soil = apply_mappings(&input.seeds_to_soil, *seed);
+            let fertilizer = apply_mappings(&input.soil_to_fertilizer, soil);
+            let water = apply_mappings(&input.fertilizer_to_water, fertilizer);
+            let light = apply_mappings(&input.water_to_light, water);
+            let temperature = apply_mappings(&input.light_to_temperature, light);
+            let humidity = apply_mappings(&input.temperature_to_humidity, temperature);
+            let location = apply_mappings(&input.humidity_to_location, humidity);
+            location
+        })
+        .min()
+        .unwrap();
 
     println!("{}", part1);
 
-    let mut seeds = Vec::with_capacity(1_000_000);
+    let mut part2 = u32::MAX;
     for mut chunk in &input.seeds.iter().chunks(2) {
         let a = *chunk.next().unwrap();
         let b = *chunk.next().unwrap();
-        for i in a..(a+b) {
-            seeds.push(i);
-        }
+        let chunk_ans = (a..(a + b))
+            .map(|seed| {
+                let soil = apply_mappings(&input.seeds_to_soil, seed);
+                let fertilizer = apply_mappings(&input.soil_to_fertilizer, soil);
+                let water = apply_mappings(&input.fertilizer_to_water, fertilizer);
+                let light = apply_mappings(&input.water_to_light, water);
+                let temperature = apply_mappings(&input.light_to_temperature, light);
+                let humidity = apply_mappings(&input.temperature_to_humidity, temperature);
+                let location = apply_mappings(&input.humidity_to_location, humidity);
+                location
+            })
+            .min()
+            .unwrap();
+        part2 = part2.min(chunk_ans);
     }
-
-    let part2 = seeds.iter().map(|seed| {
-        let soil = apply_mappings(&input.seeds_to_soil, *seed);
-        let fertilizer = apply_mappings(&input.soil_to_fertilizer, soil);
-        let water = apply_mappings(&input.fertilizer_to_water, fertilizer);
-        let light = apply_mappings(&input.water_to_light, water);
-        let temperature = apply_mappings(&input.light_to_temperature, light);
-        let humidity = apply_mappings(&input.temperature_to_humidity, temperature);
-        let location = apply_mappings(&input.humidity_to_location, humidity);
-        location
-    }).min().unwrap();
     println!("{}", part2);
 
     Ok(())
