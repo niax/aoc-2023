@@ -1,4 +1,4 @@
-use aoc_2023::commons::io::load_argv_lines;
+use aoc_2023::commons::io::Input;
 use peg::str::LineCol;
 use std::error::Error;
 use std::str::FromStr;
@@ -124,7 +124,7 @@ fn part2(input: &[Game]) -> u32 {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let input = load_argv_lines::<Game>().collect::<Result<Vec<_>, _>>()?;
+    let input = Input::from_argv()?.as_lines_parsed::<Game>().collect::<Result<Vec<_>, _>>()?;
 
     println!("{}", part1(&input));
     println!("{}", part2(&input));
