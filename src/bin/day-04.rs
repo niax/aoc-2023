@@ -1,50 +1,9 @@
-use peg::str::LineCol;
 use std::error::Error;
-use std::str::FromStr;
-
-peg::parser! {
-    // Card 166: 33 18 55 57 68 79 35 40 17 53 | 93 26 55 97 80 84 44 21 15 75 11 79 83  9 50 35 78 43 39 18 17 53 42 68 86
-    grammar card_parser() for str {
-        rule number() -> u32
-            = n:$(['0'..='9']+) {? n.parse().or(Err("bad number")) }
-
-        rule number_set() -> u128
-            = nums:number() ** (" "+) {
-                let mut x = 0;
-                for num in nums {
-                    x |= (1 << num);
-                }
-                x
-            }
-
-        pub rule card() -> Card
-            = "Card" (" "+) id:number() ":" (" "+) winning:number_set() " | " (" "*) picked:number_set() {
-                Card {
-                    id,
-                    matching_count: (winning & picked).count_ones(),
-                }
-            }
-
-        rule card_list() -> Vec<Card> = c:card() ** ("\n")
-
-        pub rule cards() -> Vec<Card> = c:card_list() "\n" {
-            c
-        }
-    }
-}
 
 #[derive(Debug)]
 pub struct Card {
     id: u32,
     matching_count: u32,
-}
-
-impl FromStr for Card {
-    type Err = peg::error::ParseError<LineCol>;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        card_parser::card(s)
-    }
 }
 
 fn part1(input: &[Card]) -> u32 {
@@ -61,11 +20,8 @@ fn part1(input: &[Card]) -> u32 {
 }
 
 fn part2(input: &[Card]) -> u32 {
-    let mut card_counts = Vec::with_capacity(input.len() + 1);
-    card_counts.push(0_u32);
-    for _ in input {
-        card_counts.push(1_u32);
-    }
+    let mut card_counts = Vec::new();
+    card_counts.resize(input.len(), 1);
 
     for card in input {
         // This card's count
@@ -79,11 +35,34 @@ fn part2(input: &[Card]) -> u32 {
     card_counts.iter().sum()
 }
 
+fn numlist_to_bitset(s: &str) -> u128 {
+    s.split(" ")
+        .filter(|x| !x.is_empty())
+        .map(|p| 1 << p.parse::<u32>().unwrap())
+        .fold(0_u128, |acc, x| acc | x)
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     let file = std::fs::File::open("inputs/04")?;
     let mmap = unsafe { memmap2::Mmap::map(&file)? };
     let s = std::str::from_utf8(&mmap)?;
-    let input = card_parser::cards(s)?;
+    let input = s
+        .lines()
+        .map(|l| {
+            let (card_header, card) = l.split_once(':').unwrap();
+            let (_, mut card_id) = card_header.split_once(' ').unwrap();
+            while card_id.chars().next().unwrap() == ' ' {
+                card_id = &card_id[1..];
+            }
+            let (winners, picks) = card.split_once(" | ").unwrap();
+            let matching_count =
+                (numlist_to_bitset(winners) & numlist_to_bitset(picks)).count_ones();
+            Card {
+                id: card_id.parse::<u32>().unwrap() - 1,
+                matching_count,
+            }
+        })
+        .collect::<Vec<Card>>();
 
     println!("{}\n{}", part1(&input), part2(&input));
 
