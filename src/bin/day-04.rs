@@ -1,5 +1,4 @@
 use peg::str::LineCol;
-use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::str::FromStr;
 
@@ -25,6 +24,12 @@ peg::parser! {
                     matching_count: (winning & picked).count_ones(),
                 }
             }
+
+        rule card_list() -> Vec<Card> = c:card() ** ("\n")
+
+        pub rule cards() -> Vec<Card> = c:card_list() "\n" {
+            c
+        }
     }
 }
 
@@ -57,7 +62,7 @@ fn part1(input: &[Card]) -> u32 {
 
 fn part2(input: &[Card]) -> u32 {
     let mut card_counts = Vec::with_capacity(input.len() + 1);
-    card_counts.push(1_u32);
+    card_counts.push(0_u32);
     for _ in input {
         card_counts.push(1_u32);
     }
@@ -78,7 +83,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let file = std::fs::File::open("inputs/04")?;
     let mmap = unsafe { memmap2::Mmap::map(&file)? };
     let s = std::str::from_utf8(&mmap)?;
-    let input = s.lines().map(|s| s.parse::<Card>() ).collect::<Result<Vec<_>, _>>()?;
+    let input = card_parser::cards(s)?;
 
     println!("{}\n{}", part1(&input), part2(&input));
 
