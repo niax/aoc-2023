@@ -1,4 +1,3 @@
-use aoc_2023::commons::io::load_argv_lines;
 use peg::str::LineCol;
 use std::collections::{HashMap, HashSet};
 use std::error::Error;
@@ -10,15 +9,20 @@ peg::parser! {
         rule number() -> u32
             = n:$(['0'..='9']+) {? n.parse().or(Err("bad number")) }
 
-        rule number_list() -> Vec<u32>
-            = number() ** (" "+)
+        rule number_set() -> u128
+            = nums:number() ** (" "+) {
+                let mut x = 0;
+                for num in nums {
+                    x |= (1 << num);
+                }
+                x
+            }
 
         pub rule card() -> Card
-            = "Card" (" "+) id:number() ":" (" "+) winning:number_list() " | " (" "*) picked:number_list() {
+            = "Card" (" "+) id:number() ":" (" "+) winning:number_set() " | " (" "*) picked:number_set() {
                 Card {
                     id,
-                    winning,
-                    picked: picked.iter().copied().collect(),
+                    matching_count: (winning & picked).count_ones(),
                 }
             }
     }
@@ -27,17 +31,7 @@ peg::parser! {
 #[derive(Debug)]
 pub struct Card {
     id: u32,
-    winning: Vec<u32>,
-    picked: HashSet<u32>,
-}
-
-impl Card {
-    pub fn matching_count(&self) -> u32 {
-        self.winning
-            .iter()
-            .filter(|x| self.picked.contains(x))
-            .count() as u32
-    }
+    matching_count: u32,
 }
 
 impl FromStr for Card {
@@ -52,40 +46,41 @@ fn part1(input: &[Card]) -> u32 {
     input
         .iter()
         .map(|card| {
-            let matching = card.matching_count();
-            if matching == 0 {
-                0
+            if card.matching_count > 0 {
+                1 << (card.matching_count - 1)
             } else {
-                2_u32.pow(matching - 1)
+                0
             }
         })
         .sum()
 }
 
 fn part2(input: &[Card]) -> u32 {
-    let mut card_counts = HashMap::new();
-    for card in input {
-        card_counts.insert(card.id, 1);
+    let mut card_counts = Vec::with_capacity(input.len() + 1);
+    card_counts.push(1_u32);
+    for _ in input {
+        card_counts.push(1_u32);
     }
 
     for card in input {
         // This card's count
-        let card_count = *card_counts.get(&card.id).unwrap();
-        for i in 0..card.matching_count() {
+        let card_count = card_counts[card.id as usize];
+        for i in 0..card.matching_count {
             let next_card_id = card.id + i + 1;
-            let x = card_counts.get(&next_card_id).unwrap();
-            card_counts.insert(next_card_id, x + card_count);
+            card_counts[next_card_id as usize] += card_count;
         }
     }
 
-    card_counts.values().sum()
+    card_counts.iter().sum()
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let input = load_argv_lines::<Card>().collect::<Result<Vec<_>, _>>()?;
+    let file = std::fs::File::open("inputs/04")?;
+    let mmap = unsafe { memmap2::Mmap::map(&file)? };
+    let s = std::str::from_utf8(&mmap)?;
+    let input = s.lines().map(|s| s.parse::<Card>() ).collect::<Result<Vec<_>, _>>()?;
 
-    println!("{}", part1(&input));
-    println!("{}", part2(&input));
+    println!("{}\n{}", part1(&input), part2(&input));
 
     Ok(())
 }
