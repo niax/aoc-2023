@@ -1,0 +1,32 @@
+---
+# .aocbench.yaml version (always 1)
+version: 1
+# Repo Author
+author: niax
+# Language used
+language: Rust
+# Path to Dockerfile to build image
+dockerfile: .docker/Dockerfile
+# Or image (this takes priority)
+# image: php:8.3-cli
+# Disable Hyperfine usage
+# hyperfine: False
+# Location where code directory should be mounted
+code: /code
+# [*] What directory to run code from
+workdir: /code
+# [*] When running image, command to run a given day.
+cmd: "./target/release/%zeroday% %input%"
+# [*] When running image, command to run once to build a given day if needed.
+runonce: "cargo build --release --bin %zeroday%"
+# [*] Directories that need persisting across runs
+persistence:
+ - /usr/local/cargo/registry
+# [*] Environment vars to set on container
+environment: []
+# [*] Path to per-day code.
+daypath: "src/bin/%zeroday%.rs"
+# [*] Path to per-day input file.
+inputfile: "input/%zeroday%"
+# [*] Path to per-day answer file.
+answerfile: "answers/%zeroday%"
