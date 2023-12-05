@@ -1,8 +1,8 @@
-use aoc_2023::commons::io::load_argv_lines;
+use aoc_2023::commons::io::Input;
 use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let input = load_argv_lines::<String>().collect::<Result<Vec<_>, _>>()?;
+    let input = Input::from_argv()?;
 
     let map = [
         ("1", 1, true),
@@ -26,7 +26,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     ];
 
     let (p1, p2) = input
-        .iter()
+        .as_str()
+        .lines()
         .map(|line| {
             let mut p1_leftmost = None;
             let mut p1_rightmost = None;
@@ -74,8 +75,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         })
         .fold((0, 0), |acc, x| (acc.0 + x.0, acc.1 + x.1));
 
-    println!("{}", p1);
-    println!("{}", p2);
+    println!("{}\n{}", p1, p2);
 
     Ok(())
 }

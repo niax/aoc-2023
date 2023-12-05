@@ -16,6 +16,56 @@ pub enum ParseLinesError<L: StdError> {
     ParseError(L),
 }
 
+enum InputStorage {
+    Mmap(memmap2::Mmap),
+    String(Vec<u8>),
+}
+
+pub struct Input {
+    storage: InputStorage,
+}
+
+impl Input {
+    pub fn from_argv() -> Result<Self, Box<dyn std::error::Error>> {
+        match env::args().nth(1) {
+            Some(path) => Self::from_file(&path),
+            None => Self::from_stdin(),
+        }
+    }
+
+    pub fn from_file(p: &String) -> Result<Self, Box<dyn std::error::Error>> {
+        let file = std::fs::File::open(p)?;
+        let storage = InputStorage::Mmap(unsafe { memmap2::Mmap::map(&file)? });
+        Ok(Self { storage })
+    }
+
+    pub fn from_stdin() -> Result<Self, Box<dyn std::error::Error>> {
+        let stdin = io::stdin();
+        let mut reader = BufReader::new(stdin.lock());
+        let mut buf = Vec::with_capacity(8196);
+        reader.read_to_end(&mut buf)?;
+
+        Ok(Self {
+            storage: InputStorage::String(buf),
+        })
+    }
+
+    pub fn as_str(&self) -> &str {
+        let buf = match &self.storage {
+            InputStorage::Mmap(mmap) => &mmap[..],
+            InputStorage::String(buf) => &buf,
+        };
+        std::str::from_utf8(buf).unwrap()
+    }
+
+    pub fn as_lines_parsed<T, E>(&self) -> impl Iterator<Item = Result<T, E>> + '_
+    where
+        T: FromStr<Err = E>,
+    {
+        self.as_str().lines().map(|l| l.parse::<T>())
+    }
+}
+
 pub fn get_argv_reader() -> BufReader<Box<dyn Read>> {
     let read: Box<dyn Read> = match env::args().nth(1) {
         Some(path) => Box::new(File::open(path).expect("File")),
