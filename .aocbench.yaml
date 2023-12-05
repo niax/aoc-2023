@@ -16,17 +16,17 @@ code: /code
 # [*] What directory to run code from
 workdir: /code
 # [*] When running image, command to run a given day.
-cmd: "./target/release/%zeroday% %input%"
+cmd: "./target/release/day-%zeroday% %input%"
 # [*] When running image, command to run once to build a given day if needed.
-runonce: "cargo build --release --bin %zeroday%"
+runonce: "cargo build --release --bin day-%zeroday%"
 # [*] Directories that need persisting across runs
 persistence:
  - /usr/local/cargo/registry
 # [*] Environment vars to set on container
 environment: []
 # [*] Path to per-day code.
-daypath: "src/bin/%zeroday%.rs"
+daypath: "src/bin/day-%zeroday%.rs"
 # [*] Path to per-day input file.
-inputfile: "input/%zeroday%"
+inputfile: "inputs/%zeroday%"
 # [*] Path to per-day answer file.
 answerfile: "answers/%zeroday%"
