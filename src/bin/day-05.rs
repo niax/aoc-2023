@@ -114,6 +114,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     println!("{}", part1);
 
+    /*
     let mut part2 = u32::MAX;
     for mut chunk in &input.seeds.iter().chunks(2) {
         let a = *chunk.next().unwrap();
@@ -134,6 +135,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         part2 = part2.min(chunk_ans);
     }
     println!("{}", part2);
+    */
 
     Ok(())
 }
