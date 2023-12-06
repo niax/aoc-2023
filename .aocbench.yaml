@@ -30,3 +30,9 @@ daypath: "src/bin/day-%zeroday%.rs"
 inputfile: "inputs/%zeroday%"
 # [*] Path to per-day answer file.
 answerfile: "answers/%zeroday%"
+# [*] Paths that changes cause an update for
+common:
+- src/commons/
+- src/lib.rs
+- Cargo.toml
+- Cargo.lock
