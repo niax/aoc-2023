@@ -2,59 +2,43 @@ use aoc_2023::commons::io::Input;
 use itertools::Itertools;
 use std::{cmp::Ordering, collections::HashMap, error::Error};
 
-#[derive(Debug, PartialEq)]
-enum HandType {
-    FiveOfAKind,
-    FourOfAKind,
-    FullHouse,
-    ThreeOfAKind,
-    TwoPair,
-    OnePair,
-    HighCard,
-}
-
-impl HandType {
-    fn rank(&self) -> usize {
-        match *self {
-            Self::FiveOfAKind => 6,
-            Self::FourOfAKind => 5,
-            Self::FullHouse => 4,
-            Self::ThreeOfAKind => 3,
-            Self::TwoPair => 2,
-            Self::OnePair => 1,
-            Self::HighCard => 0,
-        }
-    }
-}
-
-impl PartialOrd<HandType> for HandType {
-    fn partial_cmp(&self, other: &HandType) -> Option<Ordering> {
-        self.rank().partial_cmp(&other.rank())
-    }
-}
+const FIVE_OF_A_KIND: u64 = 6;
+const FOUR_OF_A_KIND: u64 = 5;
+const FULL_HOUSE: u64 = 4;
+const THREE_OF_A_KIND: u64 = 3;
+const TWO_PAIR: u64 = 2;
+const ONE_PAIR: u64 = 1;
+const HIGH_CARD: u64 = 0;
 
 #[derive(Debug)]
 struct Hand {
-    cards: [u8; 5], // 2 = 2,.... T = 10, J = 11,
-    hand_type: HandType,
+    int_repr: u64,
     bid: u32,
+}
+
+impl Hand {
+    pub fn new(cards: [u64; 5], hand_type: u64, bid: u32) -> Self {
+        let x = cards[4]
+            | cards[3] << 8
+            | cards[2] << 16
+            | cards[1] << 24
+            | cards[0] << 32
+            | hand_type << 48;
+
+        Self { int_repr: x, bid }
+    }
 }
 
 impl PartialEq for Hand {
     fn eq(&self, other: &Self) -> bool {
-        self.hand_type == other.hand_type && self.cards == other.cards
+        self.int_repr.eq(&other.int_repr)
     }
 }
 impl Eq for Hand {}
 
 impl PartialOrd<Hand> for Hand {
     fn partial_cmp(&self, other: &Hand) -> Option<Ordering> {
-        match self.hand_type.partial_cmp(&other.hand_type) {
-            Some(Ordering::Greater) => Some(Ordering::Greater),
-            Some(Ordering::Less) => Some(Ordering::Less),
-            Some(Ordering::Equal) => self.cards.partial_cmp(&other.cards),
-            None => None,
-        }
+        self.int_repr.partial_cmp(&other.int_repr)
     }
 }
 
@@ -71,12 +55,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut part2_hands = Vec::with_capacity(1000);
     for line in input.as_str().lines() {
         let (cards_str, bid_str) = line.split_once(" ").unwrap();
-        let mut cards = [0_u8; 5];
-        let mut part2_cards = [0_u8; 5];
+        let mut cards = [0_u64; 5];
+        let mut part2_cards = [0_u64; 5];
         let mut card_counts = HashMap::with_capacity(5);
         for (i, c) in cards_str.chars().enumerate() {
             cards[i] = if c.is_digit(10) {
-                c.to_digit(10).unwrap() as u8
+                c.to_digit(10).unwrap() as u64
             } else {
                 match c {
                     'T' => 10,
@@ -105,13 +89,13 @@ fn main() -> Result<(), Box<dyn Error>> {
             .rev()
             .collect::<Vec<_>>();
         let hand_type = match (card_counts.len(), *sorted_card_counts[0].1) {
-            (1, _) => HandType::FiveOfAKind,
-            (2, 4) => HandType::FourOfAKind,
-            (2, 3) => HandType::FullHouse,
-            (3, 3) => HandType::ThreeOfAKind,
-            (3, 2) => HandType::TwoPair,
-            (4, 2) => HandType::OnePair,
-            (5, _) => HandType::HighCard,
+            (1, _) => FIVE_OF_A_KIND,
+            (2, 4) => FOUR_OF_A_KIND,
+            (2, 3) => FULL_HOUSE,
+            (3, 3) => THREE_OF_A_KIND,
+            (3, 2) => TWO_PAIR,
+            (4, 2) => ONE_PAIR,
+            (5, _) => HIGH_CARD,
             _ => panic!("Dunno hand type"),
         };
 
@@ -130,26 +114,19 @@ fn main() -> Result<(), Box<dyn Error>> {
             sorted_card_counts_without_jokers.len(),
             sorted_card_counts_without_jokers[0],
         ) {
-            (1, _) => HandType::FiveOfAKind,
-            (2, 4) => HandType::FourOfAKind,
-            (2, 3) => HandType::FullHouse,
-            (3, 3) => HandType::ThreeOfAKind,
-            (3, 2) => HandType::TwoPair,
-            (4, 2) => HandType::OnePair,
-            (5, _) => HandType::HighCard,
+            (1, _) => FIVE_OF_A_KIND,
+            (2, 4) => FOUR_OF_A_KIND,
+            (2, 3) => FULL_HOUSE,
+            (3, 3) => THREE_OF_A_KIND,
+            (3, 2) => TWO_PAIR,
+            (4, 2) => ONE_PAIR,
+            (5, _) => HIGH_CARD,
             _ => panic!("Dunno hand type"),
         };
 
-        hands.push(Hand {
-            bid: bid_str.parse()?,
-            cards,
-            hand_type,
-        });
-        part2_hands.push(Hand {
-            bid: bid_str.parse()?,
-            cards: part2_cards,
-            hand_type: part2_hand_type,
-        });
+        let bid = bid_str.parse()?;
+        hands.push(Hand::new(cards, hand_type, bid));
+        part2_hands.push(Hand::new(part2_cards, part2_hand_type, bid));
     }
 
     hands.sort();
