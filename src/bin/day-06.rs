@@ -1,33 +1,8 @@
 use aoc_2023::commons::io::Input;
-use std::error::Error;
 use integer_sqrt::IntegerSquareRoot;
+use std::error::Error;
 
-peg::parser! {
-    grammar race_parser() for str {
-        rule fileend() -> () = ("\n" / "");
-
-        rule number() -> u64
-            = n:$(['0'..='9']+) {? n.parse().or(Err("bad number")) }
-
-        rule number_list() -> Vec<u64>
-            = number() ** (" "+)
-
-        pub rule races() -> Vec<Race>
-            = "Time:" " "+ times:number_list() "\n"
-              "Distance:" " "+ distances:number_list() fileend() {
-                  let mut races = Vec::with_capacity(times.len());
-                  for (time, best_distance) in std::iter::zip(times.iter(), distances.iter()) {
-                      races.push(Race{
-                          time:*time, 
-                          best_distance: *best_distance,
-                      });
-                  }
-                  races
-          }
-    }
-}
-
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Race {
     time: u64,
     best_distance: u64,
@@ -51,19 +26,39 @@ impl Race {
     }
 }
 
-fn fold_num(acc: u64, i: u64) -> u64 {
-    acc * (10_u64.pow(i.ilog10() + 1)) + i
-}
-
 fn main() -> Result<(), Box<dyn Error>> {
     let input = Input::from_argv()?;
-    let input = race_parser::races(input.as_str())?;
+    let input = input.as_str();
 
-    let part1 = input.iter().map(Race::record_beating_tries).product::<u64>();
+    let mut lines = input.lines();
+    let (_, time_line) = lines.next().unwrap().split_once(":").unwrap();
+    let (_, distance_line) = lines.next().unwrap().split_once(":").unwrap();
+
+    let mut races = [Race {
+        time: 0,
+        best_distance: 0,
+    }; 16];
+    for (i, (time, distance)) in std::iter::zip(
+        time_line.split_whitespace(),
+        distance_line.split_whitespace(),
+    )
+    .enumerate()
+    {
+        races[i].best_distance = distance.parse()?;
+        races[i].time = time.parse()?;
+    }
+
+    let part1 = races
+        .iter()
+        .map(Race::record_beating_tries)
+        .product::<u64>();
 
     let part2_race = Race {
-        time: input.iter().map(|race| race.time).fold(0, fold_num),
-        best_distance: input.iter().map(|race| race.best_distance).fold(0, fold_num),
+        time: time_line.split_whitespace().collect::<String>().parse()?,
+        best_distance: distance_line
+            .split_whitespace()
+            .collect::<String>()
+            .parse()?,
     };
     let part2 = part2_race.record_beating_tries();
 

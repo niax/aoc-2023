@@ -65,12 +65,11 @@ impl Input {
     pub fn as_lines_parsed<T>(&self) -> impl Iterator<Item = Result<T, <T as FromStr>::Err>> + '_
     where
         T: FromStr,
-        <T as FromStr>::Err: StdError
+        <T as FromStr>::Err: StdError,
     {
         self.as_str().lines().map(|l| l.parse::<T>())
     }
 }
-
 
 #[cfg(test)]
 mod tests {

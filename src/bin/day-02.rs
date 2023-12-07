@@ -124,7 +124,9 @@ fn part2(input: &[Game]) -> u32 {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let input = Input::from_argv()?.as_lines_parsed::<Game>().collect::<Result<Vec<_>, _>>()?;
+    let input = Input::from_argv()?
+        .as_lines_parsed::<Game>()
+        .collect::<Result<Vec<_>, _>>()?;
 
     println!("{}", part1(&input));
     println!("{}", part2(&input));
