@@ -68,9 +68,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     let input = Input::from_argv()?;
 
     let mut hands = Vec::with_capacity(1000);
+    let mut part2_hands = Vec::with_capacity(1000);
     for line in input.as_str().lines() {
         let (cards_str, bid_str) = line.split_once(" ").unwrap();
         let mut cards = [0_u8; 5];
+        let mut part2_cards = [0_u8; 5];
         let mut card_counts = HashMap::with_capacity(5);
         for (i, c) in cards_str.chars().enumerate() {
             cards[i] = if c.is_digit(10) {
@@ -86,13 +88,47 @@ fn main() -> Result<(), Box<dyn Error>> {
                 }
             };
 
+            part2_cards[i] = match cards[i] {
+                11 => 1,
+                _ => cards[i],
+            };
+
             let count = card_counts.entry(cards[i]).or_insert(0);
             *count += 1;
         }
 
-        let hand_type = match (
-            card_counts.len(),
-            card_counts.values().sorted().rev().next().unwrap(),
+        let joker_count = *card_counts.get(&11).unwrap_or(&0);
+
+        let sorted_card_counts = card_counts
+            .iter()
+            .sorted_by_key(|(_, v)| *v)
+            .rev()
+            .collect::<Vec<_>>();
+        let hand_type = match (card_counts.len(), *sorted_card_counts[0].1) {
+            (1, _) => HandType::FiveOfAKind,
+            (2, 4) => HandType::FourOfAKind,
+            (2, 3) => HandType::FullHouse,
+            (3, 3) => HandType::ThreeOfAKind,
+            (3, 2) => HandType::TwoPair,
+            (4, 2) => HandType::OnePair,
+            (5, _) => HandType::HighCard,
+            _ => panic!("Dunno hand type"),
+        };
+
+        let mut sorted_card_counts_without_jokers = sorted_card_counts
+            .iter()
+            .filter(|(k, _)| **k != 11)
+            .map(|(_, v)| **v)
+            .collect::<Vec<_>>();
+
+        if sorted_card_counts_without_jokers.len() > 0 {
+            sorted_card_counts_without_jokers[0] += joker_count;
+        } else {
+            sorted_card_counts_without_jokers.push(joker_count);
+        }
+        let part2_hand_type = match (
+            sorted_card_counts_without_jokers.len(),
+            sorted_card_counts_without_jokers[0],
         ) {
             (1, _) => HandType::FiveOfAKind,
             (2, 4) => HandType::FourOfAKind,
@@ -109,16 +145,28 @@ fn main() -> Result<(), Box<dyn Error>> {
             cards,
             hand_type,
         });
+        part2_hands.push(Hand {
+            bid: bid_str.parse()?,
+            cards: part2_cards,
+            hand_type: part2_hand_type,
+        });
     }
 
     hands.sort();
+    part2_hands.sort();
 
     let part1 = hands
         .iter()
         .enumerate()
         .map(|(i, hand)| (i + 1) * hand.bid as usize)
         .sum::<usize>();
-    println!("{}", part1);
+
+    let part2 = part2_hands
+        .iter()
+        .enumerate()
+        .map(|(i, hand)| (i + 1) * hand.bid as usize)
+        .sum::<usize>();
+    println!("{}\n{}", part1, part2);
 
     Ok(())
 }
