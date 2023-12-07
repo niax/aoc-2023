@@ -36,3 +36,4 @@ common:
 - src/lib.rs
 - Cargo.toml
 - Cargo.lock
+- .cargo/config.toml
