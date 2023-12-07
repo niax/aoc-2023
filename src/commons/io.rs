@@ -57,7 +57,7 @@ impl Input {
     pub fn as_str(&self) -> &str {
         let buf = match &self.storage {
             InputStorage::Mmap(mmap) => &mmap[..],
-            InputStorage::Buffer(buf) => &buf,
+            InputStorage::Buffer(buf) => buf,
         };
         std::str::from_utf8(buf).unwrap()
     }
