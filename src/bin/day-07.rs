@@ -1,5 +1,5 @@
 use aoc_2023::commons::io::Input;
-use std::{cmp::Ordering, error::Error, collections::BinaryHeap};
+use std::{cmp::Ordering, collections::BinaryHeap, error::Error};
 
 const FIVE_OF_A_KIND: u64 = 6;
 const FOUR_OF_A_KIND: u64 = 5;
@@ -130,7 +130,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         hands.push(Hand::new(cards, hand_type, bid));
         part2_hands.push(Hand::new(part2_cards, part2_hand_type, bid));
     }
-
 
     let part1 = answer(&mut hands);
     let part2 = answer(&mut part2_hands);
