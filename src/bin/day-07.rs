@@ -1,5 +1,5 @@
 use aoc_2023::commons::io::Input;
-use std::{cmp::Ordering, error::Error};
+use std::{cmp::Ordering, error::Error, collections::BinaryHeap};
 
 const FIVE_OF_A_KIND: u64 = 6;
 const FOUR_OF_A_KIND: u64 = 5;
@@ -43,15 +43,26 @@ impl PartialOrd<Hand> for Hand {
 
 impl Ord for Hand {
     fn cmp(&self, other: &Hand) -> Ordering {
-        self.int_repr.cmp(&other.int_repr)
+        other.int_repr.cmp(&self.int_repr)
     }
+}
+
+#[inline]
+fn answer(hands: &mut BinaryHeap<Hand>) -> u32 {
+    let mut x = 0;
+    let mut i = 0;
+    while let Some(hand) = hands.pop() {
+        i += 1;
+        x += i * hand.bid;
+    }
+    x
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
     let input = Input::from_argv()?;
 
-    let mut hands = Vec::with_capacity(1000);
-    let mut part2_hands = Vec::with_capacity(1000);
+    let mut hands = BinaryHeap::with_capacity(1000);
+    let mut part2_hands = BinaryHeap::with_capacity(1000);
     for line in input.as_str().lines() {
         let (cards_str, bid_str) = line.split_once(' ').unwrap();
         let mut cards = [0_u64; 5];
@@ -120,20 +131,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         part2_hands.push(Hand::new(part2_cards, part2_hand_type, bid));
     }
 
-    hands.sort();
-    part2_hands.sort();
 
-    let part1 = hands
-        .iter()
-        .enumerate()
-        .map(|(i, hand)| (i + 1) * hand.bid as usize)
-        .sum::<usize>();
-
-    let part2 = part2_hands
-        .iter()
-        .enumerate()
-        .map(|(i, hand)| (i + 1) * hand.bid as usize)
-        .sum::<usize>();
+    let part1 = answer(&mut hands);
+    let part2 = answer(&mut part2_hands);
     println!("{}\n{}", part1, part2);
 
     Ok(())
