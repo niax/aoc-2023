@@ -1,8 +1,8 @@
 use aoc_2023::commons::io::Input;
-use aoc_2023::commons::math::lcm;
+use aoc_2023::commons::math::LcmExt;
 use petgraph::graph::{DiGraph, NodeIndex};
 use petgraph::visit::EdgeRef;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::error::Error;
 
 #[inline]
@@ -37,7 +37,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     lines.next();
 
     let mut nodes = HashMap::with_capacity(1000);
-    let mut ending_in_a = HashSet::with_capacity(1000);
+    let mut ending_in_a = Vec::with_capacity(1000);
     let mut graph = DiGraph::<&str, char>::with_capacity(1000, 1000);
     for l in lines {
         let node_name = &l[0..3];
@@ -57,7 +57,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         graph.add_edge(node_idx, left_node, 'L');
         graph.add_edge(node_idx, right_node, 'R');
         if node_name.ends_with('A') {
-            ending_in_a.insert(node_idx);
+            ending_in_a.push(node_idx);
         }
     }
 
@@ -65,18 +65,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     let target_node = *nodes.get("ZZZ").unwrap();
     let part1 = path_length(&graph, path, start_node, |node| node == target_node);
 
-    let mut part2 = 0;
-    for length in ending_in_a.iter().map(|node_idx| {
+    let part2 = ending_in_a.iter().map(|node_idx| {
         path_length(&graph, path, *node_idx, |node| {
             graph.node_weight(node).unwrap().ends_with('Z')
         })
-    }) {
-        if part2 == 0 {
-            part2 = length;
-        } else {
-            part2 = lcm(part2, length);
-        }
-    }
+    }).lcm().unwrap();
 
     println!("{}\n{}", part1, part2);
 
