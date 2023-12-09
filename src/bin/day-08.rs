@@ -34,6 +34,7 @@ fn node_as_int(s: &str) -> u32 {
         | ((bytes.next().unwrap() - b'A') as u32)
 }
 
+
 fn main() -> Result<(), Box<dyn Error>> {
     let input = Input::from_argv()?;
     let mut lines = input.as_str().lines();
@@ -41,7 +42,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let path = lines.next().unwrap();
     lines.next();
 
-    let mut nodes = [(u32::MAX, u32::MAX); 32768];
+    #[allow(invalid_value)]
+    let mut nodes: [(u32,u32);32768]  = unsafe { std::mem::MaybeUninit::uninit().assume_init() };
     let mut ending_in_a = Vec::with_capacity(1_000);
     for l in lines {
         let node_name = &l[0..3];
