@@ -2,19 +2,20 @@ use std::error::Error;
 
 use aoc_2023::commons::io::Input;
 
-fn next_num(seq: &[isize]) -> (isize, isize) {
+fn next_num(seq: &mut [isize]) -> (isize, isize) {
     if seq.iter().all(|i| *i == 0) {
         (0, 0)
     } else {
-        let mut iter = seq.iter();
-        let mut last = *iter.next().unwrap();
-        let mut new_seq = Vec::with_capacity(seq.len());
-        for i in iter {
-            new_seq.push(i - last);
-            last = *i;
+        let seq_len = seq.len();
+        let first = seq[0];
+        let mut last = seq[0];
+        for i in 1..seq_len {
+            let v = seq[i];
+            seq[i] = v - last;
+            last = v;
         }
-        let next = next_num(&new_seq);
-        (seq[0] - next.0, last + next.1)
+        let next = next_num(&mut seq[1..seq_len]);
+        (first - next.0, last + next.1)
     }
 }
 
@@ -24,12 +25,13 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut part1 = 0;
     let mut part2 = 0;
+    let mut nums = Vec::with_capacity(100);
     for line in input.lines() {
-        let nums = line
-            .split_whitespace()
-            .map(|x| x.parse::<isize>().unwrap())
-            .collect::<Vec<isize>>();
-        let (p2, p1) = next_num(&nums);
+        nums.clear();
+        for num_str in line.split_whitespace() {
+            nums.push(num_str.parse().unwrap());
+        }
+        let (p2, p1) = next_num(&mut nums);
         part1 += p1;
         part2 += p2;
     }
