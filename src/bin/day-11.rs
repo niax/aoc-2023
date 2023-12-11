@@ -1,6 +1,6 @@
 use std::error::Error;
 
-use aoc_2023::commons::{grid::BitGrid, grid::Grid, io::Input};
+use aoc_2023::commons::io::Input;
 
 const GRID_SIZE: usize = 140;
 const P2_GROWTH: usize = 1_000_000;
@@ -29,9 +29,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     let input = input.as_str();
 
     let mut galaxies = Vec::with_capacity(GRID_SIZE * 10);
-    let mut in_grid = BitGrid::new(GRID_SIZE, GRID_SIZE);
     let mut p1_row_mappings = [0usize; GRID_SIZE];
     let mut p2_row_mappings = [0usize; GRID_SIZE];
+
+    let mut column_has_galaxy = [false; GRID_SIZE];
 
     let mut p1_mapped_row = 0;
     let mut p2_mapped_row = 0;
@@ -40,7 +41,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         for (x, c) in line.chars().enumerate() {
             if c == '#' {
                 galaxies.push((x, y));
-                in_grid.set((x, y), true);
+                column_has_galaxy[x] = true;
                 line_has_galaxy = true;
             }
         }
@@ -59,17 +60,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut p2_col_mappings = [0usize; GRID_SIZE];
     let mut p1_mapped_col = 0;
     let mut p2_mapped_col = 0;
-    for x in 0..in_grid.width() {
-        let mut column_has_galaxy = false;
-        for y in 0..in_grid.height() {
-            if *in_grid.at(&(x, y)).unwrap() {
-                column_has_galaxy = true;
-                break;
-            }
-        }
+    for x in 0..column_has_galaxy.len() {
         p1_col_mappings[x] = p1_mapped_col;
         p2_col_mappings[x] = p2_mapped_col;
-        if !column_has_galaxy {
+        if !column_has_galaxy[x] {
             p1_mapped_col += 2;
             p2_mapped_col += P2_GROWTH;
         } else {
