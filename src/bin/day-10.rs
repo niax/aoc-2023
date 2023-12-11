@@ -4,7 +4,7 @@ use aoc_2023::commons::grid::{BitGrid, Grid, SingleVecGrid};
 use aoc_2023::commons::io::Input;
 
 // Never eat shredded wheat (it's naaasty)
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 enum Direction {
     North,
     East,
@@ -62,10 +62,7 @@ impl Cell {
     #[inline]
     pub fn can_go_north(&self) -> bool {
         match self {
-            Self::VerticalPipe
-            | Self::NorthEastBend
-            | Self::NorthWestBend
-            | Self::StartingPosition => true,
+            Self::VerticalPipe | Self::NorthEastBend | Self::NorthWestBend => true,
             _ => false,
         }
     }
@@ -115,6 +112,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     }
 
+    let start_dir = dir;
+
     let mut pipe_grid = BitGrid::new(GRID_SIZE, GRID_SIZE);
     let mut pos = (starting.0 as isize, starting.1 as isize);
     pos = dir.step(pos);
@@ -135,7 +134,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut inside = false;
         for x in 0..pipe_grid.width() {
             if *pipe_grid.at(&(x, y)).unwrap() {
-                if grid.at(&(x, y)).unwrap().can_go_north() {
+                let cell = grid.at(&(x, y)).unwrap();
+                if cell.can_go_north()
+                    || (*cell == Cell::StartingPosition && start_dir == Direction::North)
+                {
                     inside = !inside;
                 }
             } else if inside {
