@@ -1,7 +1,7 @@
 use std::error::Error;
 
+use aoc_2023::commons::grid::{BitGrid, Grid, SingleVecGrid};
 use aoc_2023::commons::io::Input;
-use aoc_2023::commons::grid::{Grid, SingleVecGrid, BitGrid};
 
 // Never eat shredded wheat (it's naaasty)
 #[derive(Copy, Clone, Debug)]
@@ -9,7 +9,7 @@ enum Direction {
     North,
     East,
     South,
-    West
+    West,
 }
 
 impl Direction {
@@ -62,7 +62,10 @@ impl Cell {
     #[inline]
     pub fn can_go_north(&self) -> bool {
         match self {
-            Self::VerticalPipe | Self::NorthEastBend | Self::NorthWestBend => true,
+            Self::VerticalPipe
+            | Self::NorthEastBend
+            | Self::NorthWestBend
+            | Self::StartingPosition => true,
             _ => false,
         }
     }
@@ -91,14 +94,19 @@ fn main() -> Result<(), Box<dyn Error>> {
             };
 
             if cell == Cell::StartingPosition {
-                starting = (x,y);
+                starting = (x, y);
             }
             grid.set((x, y), cell);
         }
     }
 
     let mut dir = Direction::North;
-    for d in [Direction::North, Direction::East, Direction::South, Direction::West] {
+    for d in [
+        Direction::North,
+        Direction::East,
+        Direction::South,
+        Direction::West,
+    ] {
         let next_pos = d.step((starting.0 as isize, starting.1 as isize));
         let cell = grid.at(&(next_pos.0 as usize, next_pos.1 as usize));
         if cell.is_some() && cell.unwrap().step(d).is_some() {
@@ -122,24 +130,21 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
     let part1 = pipe_len.div_ceil(2);
 
-
     let mut inside_count = 0;
-    let mut inside_grid = BitGrid::new(GRID_SIZE, GRID_SIZE);
     for y in 0..pipe_grid.height() {
         let mut inside = false;
         for x in 0..pipe_grid.width() {
             if *pipe_grid.at(&(x, y)).unwrap() {
-                if grid.at(&(x, y)).unwrap().can_go_north()  {
+                if grid.at(&(x, y)).unwrap().can_go_north() {
                     inside = !inside;
                 }
             } else if inside {
-                inside_grid.set((x, y), true);
                 inside_count += 1;
             }
         }
     }
 
-    println!("{}\n{}", part1, inside_count); 
+    println!("{}\n{}", part1, inside_count);
 
     Ok(())
 }
