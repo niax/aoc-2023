@@ -1,6 +1,7 @@
 use std::error::Error;
 
 use aoc_2023::commons::io::Input;
+use bitvec::prelude::*;
 
 const GRID_SIZE: usize = 140;
 const P2_GROWTH: usize = 1_000_000;
@@ -32,7 +33,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut p1_row_mappings = [0usize; GRID_SIZE];
     let mut p2_row_mappings = [0usize; GRID_SIZE];
 
-    let mut column_has_galaxy = [false; GRID_SIZE];
+    let mut column_has_galaxy = bitarr![usize, Lsb0; 0; GRID_SIZE];
 
     let mut p1_mapped_row = 0;
     let mut p2_mapped_row = 0;
@@ -41,7 +42,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         for (x, c) in line.chars().enumerate() {
             if c == '#' {
                 galaxies.push((x, y));
-                column_has_galaxy[x] = true;
+                column_has_galaxy.set(x, true);
                 line_has_galaxy = true;
             }
         }
@@ -60,10 +61,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut p2_col_mappings = [0usize; GRID_SIZE];
     let mut p1_mapped_col = 0;
     let mut p2_mapped_col = 0;
-    for x in 0..column_has_galaxy.len() {
+    for (x, has_galaxy) in column_has_galaxy.iter().enumerate() {
+        if x >= GRID_SIZE {
+            break;
+        }
         p1_col_mappings[x] = p1_mapped_col;
         p2_col_mappings[x] = p2_mapped_col;
-        if !column_has_galaxy[x] {
+        if !has_galaxy {
             p1_mapped_col += 2;
             p2_mapped_col += P2_GROWTH;
         } else {
